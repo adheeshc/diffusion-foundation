@@ -37,7 +37,7 @@ class ForwardDiffusion:
             self.device
         )
 
-    def q_sample_direct(self, x_0, t):
+    def q_sample_direct(self, x_0, t, noise=None):
         """Sample from q(x_t | x_0) directly
 
         Args:
@@ -47,7 +47,8 @@ class ForwardDiffusion:
         Returns:
             Noisy image x_t
         """
-        noise = torch.randn_like(x_0)
+        if noise is None:
+            noise = torch.randn_like(x_0)
         sqrt_alpha = self.sqrt_alphas_cumprod[t].view(-1, 1, 1, 1)
         sqrt_one_minus_alpha = self.sqrt_one_minus_alphas_cumprod[t].view(-1, 1, 1, 1)
         return sqrt_alpha * x_0 + sqrt_one_minus_alpha * noise
