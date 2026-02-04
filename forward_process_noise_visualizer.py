@@ -2,8 +2,8 @@ import os
 
 import matplotlib.pyplot as plt
 import torch
+from dataloader import CIFARDataLoader
 from noise_schedule import NoiseSchedule
-from torchvision import datasets, transforms
 
 
 class ForwardProcessNoiseVisualizer:
@@ -34,6 +34,7 @@ class ForwardProcessNoiseVisualizer:
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1 - self.alphas_cumprod).to(
             self.device
         )
+        self.loader = CIFARDataLoader()
 
     def add_noise(self, x_0, t):
         """
@@ -55,23 +56,7 @@ class ForwardProcessNoiseVisualizer:
         return sqrt_alpha * x_0 + sqrt_one_minus_alpha * noise
 
     def visualize_diffusion_steps(self, num_images=4, num_steps=8):
-        pass
-        transform = transforms.Compose([transforms.ToTensor()])
-        dataset = datasets.CIFAR10(
-            root="../../../Datasets",
-            train=True,
-            download=False,
-            transform=transform,
-        )
-
-        images = []
-        labels = []
-        for i in range(num_images):
-            img, label = dataset[i * 1000]
-            images.append(img)
-            labels.append(label)
-        images = torch.stack(images).to(device=self.device)
-
+        images, labels = self.loader.get_samples(num_images=num_images)
         timesteps = torch.linspace(0, self.timesteps - 1, num_steps).long()
 
         fig, axes = plt.subplots(
@@ -94,8 +79,8 @@ class ForwardProcessNoiseVisualizer:
         plt.tight_layout()
         os.makedirs("./outputs", exist_ok=True)
         plt.savefig(
-            f"./outputs/forward_process_{self.schedule}.png",
-            dpi=300,
+            f"./outputs/forward_process_{self.schedule}_1.png",
+            dpi=150,
             bbox_inches="tight",
         )
 
