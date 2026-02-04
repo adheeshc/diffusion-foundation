@@ -1,4 +1,8 @@
+import os
+
+import matplotlib.pyplot as plt
 import torch
+from dataloader import CIFARDataLoader
 from noise_schedule import NoiseSchedule
 
 
@@ -13,12 +17,17 @@ class ForwardDiffusion:
     4. Implement posterior q(x_{t-1} | x_t, x_0)
     """
 
-    def __init__(self, timesteps=1000):
+    def __init__(self, timesteps=1000, schedule="linear"):
         self.timesteps = timesteps
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.loader = CIFARDataLoader()
 
-        noise_schedule = NoiseSchedule(timesteps=timesteps)
-        betas = noise_schedule.linear_schedule()
+        noise_schedule = NoiseSchedule(timesteps)
+        self.schedule = schedule
+        if self.schedule == "linear":
+            betas = noise_schedule.linear_schedule()
+        else:
+            betas = noise_schedule.cosine_schedule()
 
         self.betas = betas.to(self.device)
         self.alphas = (1 - betas).to(self.device)
@@ -100,3 +109,37 @@ class ForwardDiffusion:
         ) * beta_t
 
         return posterior_mean, posterior_variance
+
+    def visualize_diffusion_steps(self, num_images=4, num_steps=8):
+        images, labels = self.loader.get_samples(num_images=num_images)
+        timesteps = torch.linspace(0, self.timesteps - 1, num_steps).long()
+
+        fig, axes = plt.subplots(
+            num_images, num_steps, figsize=(num_steps * 2, num_images * 2)
+        )
+
+        for i in range(num_images):
+            for j, t in enumerate(timesteps):
+                t_batch = t.unsqueeze(0)
+                noisy = self.q_sample_direct(images[i : i + 1], t_batch)
+
+                img = noisy[0].permute(1, 2, 0).clamp(0, 1).cpu().numpy()
+
+                axes[i, j].imshow(img)
+                axes[i, j].axis("off")
+                if i == 0:
+                    axes[i, j].set_title(f"t={t.item()}", fontsize=10)
+
+        plt.suptitle("Forward Diffusion Process", fontsize=14)
+        plt.tight_layout()
+        os.makedirs("./outputs", exist_ok=True)
+        plt.savefig(
+            f"./outputs/forward_process_{self.schedule}.png",
+            dpi=150,
+            bbox_inches="tight",
+        )
+
+
+if __name__ == "__main__":
+    forward = ForwardDiffusion(timesteps=1000, schedule="linear")
+    forward.visualize_diffusion_steps(num_images=4, num_steps=8)
