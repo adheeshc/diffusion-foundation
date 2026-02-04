@@ -6,7 +6,7 @@ from noise_schedule import NoiseSchedule
 from torchvision import datasets, transforms
 
 
-class ForwardProcessVisualizer:
+class ForwardProcessNoiseVisualizer:
     """
     Visualize how images become noise over time.
 
@@ -101,5 +101,5 @@ class ForwardProcessVisualizer:
 
 
 if __name__ == "__main__":
-    visualizer = ForwardProcessVisualizer(timesteps=1000, schedule="linear")
+    visualizer = ForwardProcessNoiseVisualizer(timesteps=1000, schedule="linear")
     visualizer.visualize_diffusion_steps(num_images=4, num_steps=8)
