@@ -37,6 +37,14 @@ class ForwardDiffusion:
             self.device
         )
 
+        # Posterior variance: β̃_t = (1 - α̅_{t-1}) / (1 - α̅_t) * β_t
+        alphas_cumprod_prev = torch.cat(
+            [torch.tensor([1.0], device=self.device), self.alphas_cumprod[:-1]]
+        )
+        self.posterior_variance = (
+            (1 - alphas_cumprod_prev) / (1 - self.alphas_cumprod) * self.betas
+        )
+
     def q_sample_direct(self, x_0, t, noise=None):
         """Sample from q(x_t | x_0) directly
 
@@ -105,11 +113,11 @@ class ForwardDiffusion:
             1 - alpha_cumprod_t
         )
 
-        posterior_variance = (
+        self.posterior_variance = (
             (1 - alpha_cumprod_t_prev) / (1 - alpha_cumprod_t)
         ) * beta_t
 
-        return posterior_mean, posterior_variance
+        return posterior_mean, self.posterior_variance
 
     def visualize_diffusion_steps(self, num_images=4, num_steps=8):
         images, labels = self.loader.get_samples(num_images=num_images)
