@@ -16,7 +16,6 @@ from tqdm import tqdm
 2. Understand time step embedding (sinusoidal encoding)
 3. Train the network on CIFAR-10
 4. Visualize what the network learns
-
 """
 
 
@@ -342,5 +341,4 @@ def visualize_denoising(model: SimpleUNet, forward: ForwardDiffusion, device, st
 
 
 if __name__ == "__main__":
-    # train_network()
     train_network()
