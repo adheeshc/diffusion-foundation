@@ -38,6 +38,14 @@ class CIFARDataLoader:
         images = torch.stack(images).to(self.device)
         return images, labels
 
-    def get_dataloader(self, batch_size=32, shuffle=True):
+    def get_dataloader(
+        self, batch_size=32, shuffle=True, num_workers=4, pin_memory=True
+    ):
         """Get a PyTorch DataLoader for batched iteration."""
-        return DataLoader(self.dataset, batch_size=batch_size, shuffle=shuffle)
+        return DataLoader(
+            self.dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+        )
